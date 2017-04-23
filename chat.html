@@ -16,7 +16,11 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="/scripts/emote.js"></script>
   <script>
+
+  console.log("request done"); // debug
+
     $(function () {
       var socket = io();
       $('form').submit(function(){
