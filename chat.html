@@ -16,10 +16,8 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-  <script src="/scripts/emote.js"></script>
+  <script type="text/javascript" src="emote.js"></script>
   <script>
-
-  console.log("request done"); // debug
 
     $(function () {
       var socket = io();
@@ -29,7 +27,30 @@
         return false;
       });
       socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
+
+        // TODO Logic that probably could be moved
+        // -----------------------------------------
+        var res = msg.split(" "); // Split the message into an array of words
+        console.log(res);
+
+          var split = "";
+          var i;
+
+          for (i in res) {
+
+            split = res[i];
+            var id = emotes.emoteControl(split);
+
+            if (id == -1) { // If the word is no emote...
+              $('#messages').append($('<li>').text(split));
+            }
+            else { // else it is an emote
+              $('#messages').append($('<li>').image(emotes.emoteReturn(id)));
+            }
+
+            split = "";
+          }
+        // -----------------------------------------
       });
     });
   </script>

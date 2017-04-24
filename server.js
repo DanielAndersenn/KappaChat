@@ -26,6 +26,11 @@ app.get('/chat', function(req, res) {
    */
 });
 
+// Should'nt be accessable for users
+app.get('/emote.js', function(req, res) {
+  res.sendFile(__dirname + '/scripts/emote.js');
+})
+
 app.post('/login', function(req, res) {
   //res.send();
 });
@@ -64,7 +69,8 @@ function authenticate(username, password) {
         // If no error redirect to chat
         if (!err) {
 
-            Redirect();
+            // TODO DOESNT WORK
+            //Redirect();
         }
 
     }); // client end
