@@ -33,23 +33,21 @@
         var res = msg.split(" "); // Split the message into an array of words
         console.log(res);
 
-          var split = "";
           var i;
 
-          for (i in res) {
+          for (i in res) { // For every element in array
 
-            split = res[i];
-            var id = emotes.emoteControl(split);
+            var id = emotes.emoteControl(res[i]);
 
             if (id == -1) { // If the word is no emote...
-              $('#messages').append($('<li>').text(split));
-            }
+              $('#messages').append($('<li>').text(res[i]));
+            } // if end
             else { // else it is an emote
-              $('#messages').append($('<li>').image(emotes.emoteReturn(id)));
-            }
-
-            split = "";
-          }
+              var img = document.createElement('img');
+              img.src = emotes.emoteReturn(id);
+              messages.appendChild(img);
+            } // else end
+          } //  for end
         // -----------------------------------------
       });
     });
