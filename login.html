@@ -7,25 +7,41 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
+
+var socket = io();
+
 $(function () {
-  var socket = io();
-  $('form').submit(function() {
-  socket.emit('login', $('#username').val() + '|' +$('#pass').val());
-  });
-  
+
   socket.on('authenticated', function(destination) {
-    window.location.replace("www.google.dk");
+    console.log('Value of destination: ' + destination);
+    window.location.replace(destination);
   });
 
+
+/*
+  $('form').submit(function() {
+    console.log('Value of socket' + socket.id);
+  socket.emit('login', $('#username').val() + '|' +$('#pass').val());
+
+});*/
+
+
+
 });
+
+function myFunction() {
+  console.log('Virker knap?');
+  socket.emit('login', $('#username').val() + '|' +$('#pass').val());
+}
 </script>
 
 <body>
-<form action="" method="post">
-Username:<input id="username" type="text" name="username"/><br/><br/>
-Password:<input id="pass" type="password" name="pass"/><br/><br/>
-<input type="submit" value="login"/>
-</form>
+
+  Username:<input id="username" type="text" name="username"/><br/><br/>
+  Password:<input id="pass" type="password" name="pass"/><br/><br/>
+  <button onclick="myFunction()">Login</button>
+
+
 </body>
 
 </html>

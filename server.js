@@ -10,12 +10,11 @@ http.listen(3000, function(){
 //Entrypoint for klienter. Vi modtager et request (req) og tilbagesender et response (res)
 // '/ . . .' is the url name
 app.get('/login', function(req, res) {
-
    res.sendFile(__dirname + '/login.html');
 });
 
 app.get('/', function(req, res) {
-   res.redirect('/login');
+   //res.redirect('/login');
 });
 
 // I guess it is not correct practice to make this get
@@ -51,7 +50,7 @@ app.post('/login', function(req, res) {
 
 //Metoden bliver kaldt når en klient forbinder gennem websocket gennem javascript
 io.on('connection', function(socket) {
-
+  console.log('Client connected with socket ID: ' + socket.id);
   socket.on('chat message', function(msg){
     io.emit('chat message', msg);
   }); // end socket.on.chat message
@@ -60,6 +59,7 @@ io.on('connection', function(socket) {
   //Metoden "aktiverer" når en klient sender en .emit med navnet 'login'
   socket.on('login', function(msg) {
     var sID = socket.id;
+    console.log("Value of sID: " + sID);
     //Split stringen op på tegnet '|' for at separere user/pass.
     var attributes = msg.split('|');
     var username = attributes[0];
@@ -74,6 +74,8 @@ io.on('connection', function(socket) {
     if(authenticated)
     {
     var destination = '/chat';
+    sID = socket.id;
+    console.log("Value of sID: " + sID);
     socket.emit('authenticated', destination);
     }
     else
