@@ -3,16 +3,40 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var soap = require('soap');
 
-
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });
 
 
 //Entrypoint for klienter. Vi modtager et request (req) og tilbagesender et response (res)
-app.get('/', function(req, res){
+// '/ . . .' is the url name
+app.get('/login', function(req, res) {
+
    res.sendFile(__dirname + '/login.html');
- });
+});
+
+app.get('/', function(req, res) {
+   res.redirect('/login');
+});
+
+// I guess it is not correct practice to make this get
+// since users then just can type localhost:3000/chat to enter chat..
+app.get('/chat', function(req, res) {
+   res.sendFile(__dirname + '/chat.html');
+
+   /*
+   If we had a user object we could have a boolean (isOnline)
+   that is set to 'true' if the user is online (i.e. after they have logged in)
+   and false othwerwise.
+   If the user then tries to type this direct URL in they will be redirected
+   to /login instead
+   */
+});
+
+// Should'nt be accessable for users
+app.get('/emote.js', function(req, res) {
+  res.sendFile(__dirname + '/scripts/emote.js');
+})
 
  /*
  app.post('/', function(req, res) {
@@ -20,21 +44,30 @@ app.get('/', function(req, res){
  })
  */
 
-//Metoden bliver kaldt når en klient forbinder gennem websocket gennem javascript
-io.on('connection', function(socket){
+
 
   //Metoden "aktiverer" når en klient sender en .emit med navnet 'chat message'
+
+app.post('/login', function(req, res) {
+  //res.send();
+});
+
+//Metoden bliver kaldt når en klient forbinder gennem websocket gennem javascript
+io.on('connection', function(socket) {
+
   socket.on('chat message', function(msg){
     io.emit('chat message', msg);
   });
 
+
   //Metoden "aktiverer" når en klient sender en .emit med navnet 'login'
   socket.on('login', function(msg) {
-  //Split stringen op på tegnet '|' for at separere user/pass.
-  var attributes = msg.split('|');
+    var sID = socket.id;
+    //Split stringen op på tegnet '|' for at separere user/pass.
+    var attributes = msg.split('|');
 
-  var username = attributes[0];
-  var pass = attributes[1];
+    var username = attributes[0];
+    var pass = attributes[1];
 
   console.log('Trying to log in user with Username: ' + username + ' Pass: ' + pass);
   //Kald metoden der authenticater mod javabog over SOAP
@@ -54,12 +87,9 @@ io.on('connection', function(socket){
       }
   });
 
-
-
 });
 
 });
-
 
 function authenticate(username, password, callback) {
 
@@ -68,18 +98,16 @@ function authenticate(username, password, callback) {
 
   soap.createClient(url, function(err, client) {
     client.BrugeradminImplService.BrugeradminImplPort.hentBruger(args, function(err, result) {
-        if(err==null)
-        {
+
+        if(err == null) {
           console.log(result);
-        callback(true);
-        }else
-        {
-        console.log(err);
-        callback(false);
+          callback(true);
+        }
+        else {
+          console.log(err);
+          callback(false);
         }
 
     });
   });
-
-
-}
+}; // function end

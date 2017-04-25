@@ -10,17 +10,15 @@
 $(function () {
   var socket = io();
   $('form').submit(function() {
-    socket.emit('login', $('#username').val() + '|' +$('#pass').val());
+  socket.emit('login', $('#username').val() + '|' +$('#pass').val());
   });
 
   socket.on('authenticated', function(destination){
-  window.location.replace("www.google.dk");
-  })
+    window.location.replace("www.google.dk");
+  });
 
 });
 </script>
-
-
 
 <body>
 <form action="" method="post">
