@@ -2,13 +2,14 @@
 <html>
   <head>
     <title>Distro chat</title>
+    <!-- CSS styling -->
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
       form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
       form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
       form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages { list-style-type: none; margin: 0; padding: 0}
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
     </style>
@@ -16,16 +17,62 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script type="text/javascript" src="emote.js"></script>
   <script>
+
     $(function () {
       var socket = io();
       $('form').submit(function(){
-        socket.emit('chat message', $('#m').val());
-        $('#m').val('');
+        socket.emit('chat message', $('#m').val()); // Send message in type area
+        $('#m').val(''); // Reset type area
         return false;
       });
       socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
+
+        // TODO Logic that probably could be moved
+        // -----------------------------------------
+        var res = msg.split(" "); // Split the message into an array of words
+        console.log(res);
+
+          var i;
+          /*
+          TODO The random color should only be generated once the user logs in.
+          And it shouldnt be colored when it is received. But when it is written.
+          */
+          var color = emotes.randomColor();
+
+          /*
+          Local variable that is going to hold the whole manipulated message
+          before is it made public to the user
+          */
+          var $ul = document.createElement('ul');
+
+          for (i in res) { // For every element in array of words
+
+            var id = emotes.emoteControl(res[i]);
+
+            if (id == -1) { // If the word is no emote...
+              //$('#messages').append($('<li>').text(res[i]));
+
+              var li = document.createElement('foo');
+              li.appendChild(document.createTextNode(res[i] + " "));
+              li.style.color = color; // Color the text
+              $ul.appendChild(li);
+            } // if end
+            else { // else it is an emote
+
+              var img = document.createElement('img');
+              img.src = emotes.emoteReturn(id); // Define source of emote (url)
+              img.style="vertical-align:middle"; // CSS command to align emote to middle
+              // Add emote - padding is defined in order to make space around emote
+              // padding = "top right bottom left"
+              $ul.appendChild(img).style.padding = "0px 2px 0px 2px";
+            } // else end
+          } //  for end
+
+          // Make modified message visible to user
+          messages.appendChild($ul);
+        // -----------------------------------------
       });
     });
   </script>
