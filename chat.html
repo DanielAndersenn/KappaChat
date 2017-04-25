@@ -35,6 +35,11 @@
         console.log(res);
 
           var i;
+          /*
+          TODO The random color should only be generated once the user logs in.
+          And it shouldnt be colored when it is received. But when it is written.
+          */
+          var color = emotes.randomColor();
 
           /*
           Local variable that is going to hold the whole manipulated message
@@ -51,6 +56,7 @@
 
               var li = document.createElement('foo');
               li.appendChild(document.createTextNode(res[i] + " "));
+              li.style.color = color; // Color the text
               $ul.appendChild(li);
             } // if end
             else { // else it is an emote

@@ -40,16 +40,16 @@ io.on('connection', function(socket) {
     io.emit('chat message', msg);
   });
 
-socket.on('login', function(msg) {
-  var attributes = msg.split('|');
+  socket.on('login', function(msg) {
+    var sID = socket.id;
+    var attributes = msg.split('|');
 
-  var username = attributes[0];
-  var pass = attributes[1];
+    var username = attributes[0];
+    var pass = attributes[1];
 
-  console.log('Trying to log in user with Username: ' + username + ' Pass: ' + pass);
-  authenticate(username, pass);
-
-});
+    console.log('Trying to log in user with Username: ' + username + ' Pass: ' + pass);
+    authenticate(username, pass);
+  });
 
 });
 
@@ -62,24 +62,16 @@ function authenticate(username, password) {
   var url = 'http://javabog.dk:9901/brugeradmin?wsdl';
   var args = {':arg0': username, ':arg1': password};
 
-  soap.createClient(url, function(err, client, app) {
+  soap.createClient(url, function(err, client) {
     client.BrugeradminImplService.BrugeradminImplPort.hentBruger(args, function(err, result) {
         console.log(result);
 
         // If no error redirect to chat
         if (!err) {
 
-            // TODO DOESNT WORK
-            //Redirect();
         }
 
     }); // client end
   }); // createClient end
 
-} // function end
-
-// TODO Should probably be kept in another file (?)
-// Function to redirect user on succesful login
-function Redirect(res) {
-  res.redirect('/chat');
 } // function end

@@ -74,5 +74,10 @@ var emotes = (function () {
           var emoteLink = link.replace("{image_id}", emote_id); // insert emote id
           return emoteLink;
         }
+
+        // TODO MOVE THIS - returns random color code
+      , randomColor: function() {
+          return '#' + Math.floor(Math.random() * 16777215).toString(16);
+        }
       };
   }());
