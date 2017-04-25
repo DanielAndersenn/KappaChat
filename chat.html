@@ -27,6 +27,7 @@
         $('#m').val(''); // Reset type area
         return false;
       });
+
       socket.on('chat message', function(msg){
 
         // TODO Logic that probably could be moved
@@ -73,7 +74,7 @@
           // Make modified message visible to user
           messages.appendChild($ul);
         // -----------------------------------------
-      });
+      }); // chat message
     });
   </script>
 

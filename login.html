@@ -12,8 +12,8 @@ $(function () {
   $('form').submit(function() {
   socket.emit('login', $('#username').val() + '|' +$('#pass').val());
   });
-
-  socket.on('authenticated', function(destination){
+  
+  socket.on('authenticated', function(destination) {
     window.location.replace("www.google.dk");
   });
 

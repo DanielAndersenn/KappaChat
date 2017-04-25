@@ -7,7 +7,6 @@ http.listen(3000, function(){
   console.log('listening on *:3000');
 });
 
-
 //Entrypoint for klienter. Vi modtager et request (req) og tilbagesender et response (res)
 // '/ . . .' is the url name
 app.get('/login', function(req, res) {
@@ -44,8 +43,6 @@ app.get('/emote.js', function(req, res) {
  })
  */
 
-
-
   //Metoden "aktiverer" når en klient sender en .emit med navnet 'chat message'
 
 app.post('/login', function(req, res) {
@@ -57,7 +54,7 @@ io.on('connection', function(socket) {
 
   socket.on('chat message', function(msg){
     io.emit('chat message', msg);
-  });
+  }); // end socket.on.chat message
 
 
   //Metoden "aktiverer" når en klient sender en .emit med navnet 'login'
@@ -65,7 +62,6 @@ io.on('connection', function(socket) {
     var sID = socket.id;
     //Split stringen op på tegnet '|' for at separere user/pass.
     var attributes = msg.split('|');
-
     var username = attributes[0];
     var pass = attributes[1];
 
@@ -77,8 +73,8 @@ io.on('connection', function(socket) {
     console.log('Value of authenticated: ' + authenticated);
     if(authenticated)
     {
-    var destination = '/chat.html';
-    socket.emit('authenticated', destination)
+    var destination = '/chat';
+    socket.emit('authenticated', destination);
     }
     else
       {
@@ -87,9 +83,9 @@ io.on('connection', function(socket) {
       }
   });
 
-});
+}); // end socket.on.login
 
-});
+}); // end io.on
 
 function authenticate(username, password, callback) {
 
@@ -107,7 +103,6 @@ function authenticate(username, password, callback) {
           console.log(err);
           callback(false);
         }
-
     });
   });
 }; // function end
