@@ -3,6 +3,22 @@
 <html>
   <head>
     <title>Distro chat</title>
+    <style type="text/css">
+    html, body {
+        height: 100%;
+    }
+
+    html {
+        display: table;
+        margin: auto;
+    }
+
+    body {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    </style>
 </head>
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
@@ -39,6 +55,7 @@ function myFunction() {
 
   Username:<input id="username" type="text" name="username"/><br/><br/>
   Password:<input id="pass" type="password" name="pass"/><br/><br/>
+
   <button onclick="myFunction()">Login</button>
 
 
