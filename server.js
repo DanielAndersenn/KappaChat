@@ -89,7 +89,7 @@ io.on('connection', function(socket) {
 
 });
 
-//});
+});
 
 function authenticate(username, password, callback) {
 
@@ -99,16 +99,15 @@ function authenticate(username, password, callback) {
   soap.createClient(url, function(err, client) {
     client.BrugeradminImplService.BrugeradminImplPort.hentBruger(args, function(err, result) {
 
-        if(err==null)
-        {
+        if(err == null) {
           console.log(result);
-        callback(true);
-        }else
-        {
-        console.log(err);
-        callback(false);
+          callback(true);
+        }
+        else {
+          console.log(err);
+          callback(false);
         }
 
     });
   });
-} // function end
+}; // function end
