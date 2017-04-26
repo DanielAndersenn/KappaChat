@@ -15,7 +15,7 @@ app.configure(function () {
     app.use(express.bodyParser());
     app.use(express.cookieParser('KappaChat '));
     app.use(express.session());
-    app.use(express.static(path.join(__dirname, 'public')));
+    app.use(express.static(path.join(__dirname, 'images')));
 });
 
 app.use(function (req, res, next) {
@@ -121,4 +121,6 @@ app.get('/emote.js', requiredAuthentication, function(req, res) {
   res.sendfile(__dirname + '/scripts/emote.js');
 })
 
-server.listen(3000);
+server.listen(3000, function() {
+  console.log("Listening for connections on port 3000 ...");
+});

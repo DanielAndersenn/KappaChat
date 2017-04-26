@@ -28,6 +28,11 @@
       padding-left: 4px;
     }
 
+    .divCenter {
+      width: 100%;
+      text-align: center;
+    }
+
     </style>
 </head>
 <script src="/socket.io/socket.io.js"></script>
@@ -38,12 +43,14 @@
 </script>
 
 <body>
-
-  <form method="post" action="/login">
+  <img src="/Kappa.jpg"/ width="400" margin-left="200px"/>
+<div class="divCenter">
+  <form method="post" action="/login" >
     <p><input class="loginBox" type="text" name="username" value="" placeholder="Studienummer"></p>
     <p><input class="loginBox" type="password" name="password" value="" placeholder="Password"></p>
     <p class="submit"><input type="submit" name="login" value="Login"></p>
   </form>
+</div>
 
 
 </body>
