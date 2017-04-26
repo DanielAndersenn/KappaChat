@@ -1,52 +1,68 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+
+//Module Dependencies
+var express = require('express');
+var app = express();
+var http = require('http');
+var server = http.createServer(app);
+var path = require('path');
+var UserModel = require('./UserModel');
+var io = require('socket.io').listen(server);
 var soap = require('soap');
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+
+//Configure the application and prepare for sessionhandling
+app.configure(function () {
+    app.use(express.bodyParser());
+    app.use(express.cookieParser('KappaChat '));
+    app.use(express.session());
+    app.use(express.static(path.join(__dirname, 'public')));
 });
 
-//Entrypoint for klienter. Vi modtager et request (req) og tilbagesender et response (res)
-// '/ . . .' is the url name
-app.get('/login', function(req, res) {
-   res.sendFile(__dirname + '/login.html');
+app.use(function (req, res, next) {
+    var err = req.session.error,
+        msg = req.session.success;
+    delete req.session.error;
+    delete req.session.success;
+    res.locals.message = '';
+    if (err) res.locals.message = '<p class="msg error">' + err + '</p>';
+    if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
+    next();
 });
+/*
+Helper Functions
+*/
+function authenticate(name, pass, callback) {
+console.log('Trying to log in user with Username: ' + name + ' Pass: ' + pass);
+  var url = 'http://javabog.dk:9901/brugeradmin?wsdl';
+  var args = {':arg0': name, ':arg1': pass};
 
-app.get('/', function(req, res) {
-   //res.redirect('/login');
-});
+  soap.createClient(url, function(err, client) {
+    console.log("Value of err: " + err);
+    client.BrugeradminImplService.BrugeradminImplPort.hentBruger(args, function(err, result) {
 
-// I guess it is not correct practice to make this get
-// since users then just can type localhost:3000/chat to enter chat..
-app.get('/chat', function(req, res) {
-   res.sendFile(__dirname + '/chat.html');
+        if(result) {
+          console.log(result);
+          var user = new UserModel.User(result.return.brugernavn);
+          console.log(user.userName);
+          callback(null, user);
+        }
+        else {
+          console.log(err);
+          callback(new Error('Cannot authenticate user'));
+        }
+    });
+  });
 
-   /*
-   If we had a user object we could have a boolean (isOnline)
-   that is set to 'true' if the user is online (i.e. after they have logged in)
-   and false othwerwise.
-   If the user then tries to type this direct URL in they will be redirected
-   to /login instead
-   */
-});
+};
 
-// Should'nt be accessable for users
-app.get('/emote.js', function(req, res) {
-  res.sendFile(__dirname + '/scripts/emote.js');
-})
-
- /*
- app.post('/', function(req, res) {
-   res.sendFile(__dirname + '/chat.html');
- })
- */
-
-  //Metoden "aktiverer" når en klient sender en .emit med navnet 'chat message'
-
-app.post('/login', function(req, res) {
-  //res.send();
-});
+function requiredAuthentication(req, res, next) {
+    if (req.session.user) {
+        next();
+    } else {
+        req.session.error = 'Access denied!';
+        res.redirect('/login');
+    }
+}
 
 //Metoden bliver kaldt når en klient forbinder gennem websocket gennem javascript
 io.on('connection', function(socket) {
@@ -55,56 +71,54 @@ io.on('connection', function(socket) {
     io.emit('chat message', msg);
   }); // end socket.on.chat message
 
-
-  //Metoden "aktiverer" når en klient sender en .emit med navnet 'login'
-  socket.on('login', function(msg) {
-    var sID = socket.id;
-    console.log("Value of sID: " + sID);
-    //Split stringen op på tegnet '|' for at separere user/pass.
-    var attributes = msg.split('|');
-    var username = attributes[0];
-    var pass = attributes[1];
-
-  console.log('Trying to log in user with Username: ' + username + ' Pass: ' + pass);
-  //Kald metoden der authenticater mod javabog over SOAP
-  //var authenticated = authenticate(username, pass);
-
-  authenticate(username, pass, function(authenticated) {
-    console.log('Value of authenticated: ' + authenticated);
-    if(authenticated)
-    {
-    var destination = '/chat';
-    sID = socket.id;
-    console.log("Value of sID: " + sID);
-    socket.emit('authenticated', destination);
-    }
-    else
-      {
-        //sendFile(__dirname + '/login.html');
-        console.log('Test?');
-      }
-  });
-
-}); // end socket.on.login
-
 }); // end io.on
 
-function authenticate(username, password, callback) {
 
-  var url = 'http://javabog.dk:9901/brugeradmin?wsdl';
-  var args = {':arg0': username, ':arg1': password};
+//Routing controll
 
-  soap.createClient(url, function(err, client) {
-    client.BrugeradminImplService.BrugeradminImplPort.hentBruger(args, function(err, result) {
+app.get("/", function (req, res) {
 
-        if(err == null) {
-          console.log(result);
-          callback(true);
-        }
-        else {
-          console.log(err);
-          callback(false);
+    if (req.session.user) {
+        res.send("Welcome " + req.session.user.userName + "<br>" + "<a href='/logout'>logout</a>");
+    } else {
+        res.sendfile(__dirname + '/login.html');
+    }
+});
+
+app.get("/login", function (req, res) {
+    res.sendfile(__dirname + '/login.html');
+});
+
+app.post("/login", function (req, res) {
+    authenticate(req.body.username, req.body.password, function (err, user) {
+        if (user) {
+
+            req.session.regenerate(function () {
+
+                req.session.user = user;
+                req.session.success = 'Authenticated as ' + user.userName + ' click to <a href="/logout">logout</a>. ' + ' You may now access <a href="/restricted">/restricted</a>.';
+                res.redirect('/chat');
+            });
+        } else {
+            req.session.error = 'Authentication failed, please check your ' + ' username and password.';
+            res.redirect('/login');
         }
     });
-  });
-}; // function end
+});
+
+app.get('/chat', requiredAuthentication, function(req, res) {
+   res.sendfile(__dirname + '/chat.html');
+});
+
+app.get('/logout', function (req, res) {
+    req.session.destroy(function () {
+        res.redirect('/');
+    });
+});
+
+// Should'nt be accessable for users
+app.get('/emote.js', requiredAuthentication, function(req, res) {
+  res.sendfile(__dirname + '/scripts/emote.js');
+})
+
+server.listen(3000);

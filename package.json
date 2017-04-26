@@ -1,9 +1,15 @@
 {
-  "name": "Kappa Chat",
+  "name": "KappaChat",
   "version": "0.0.1",
-  "description": "my first socket.io app",
+  "description": "PogChamp",
+  "private": true,
+  "scripts": {
+    "start": "nodemon server.js"
+  },
   "dependencies": {
-    "express": "^4.15.2",
-    "socket.io": "^1.7.3"
+    "express": "3.0.0rc4",
+    "nodemon": "*",
+    "socket.io": "^1.7.3",
+    "soap": "*"
   }
 }
