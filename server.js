@@ -12,8 +12,8 @@ var soap = require('soap');
 
 //Configure the application and prepare for sessionhandling
 app.configure(function () {
-    app.use(express.bodyParser());
-    app.use(express.cookieParser('KappaChat '));
+    app.use(express.bodyParser({strict: false}));
+    app.use(express.cookieParser('KappaChat'));
     app.use(express.session());
     app.use(express.static(path.join(__dirname, 'images')));
 });
@@ -28,6 +28,13 @@ app.use(function (req, res, next) {
     if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
     next();
 });
+
+app.use(function (req, res, next) {
+  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  console.log('Client IP:', ip);
+  next();
+});
+
 /*
 Helper Functions
 */
@@ -43,6 +50,7 @@ console.log('Trying to log in user with Username: ' + name + ' Pass: ' + pass);
         if(result) {
           console.log(result);
           var user = new UserModel.User(result.return.brugernavn);
+          user.chatColor = '#2055';
           console.log(user.userName);
           callback(null, user);
         }
@@ -96,7 +104,8 @@ app.post("/login", function (req, res) {
             req.session.regenerate(function () {
 
                 req.session.user = user;
-                req.session.success = 'Authenticated as ' + user.userName + ' click to <a href="/logout">logout</a>. ' + ' You may now access <a href="/restricted">/restricted</a>.';
+                res.cookie('userName', user.userName, {maxAge: 900000});
+                res.cookie('chatColor', user.chatColor, {maxAge: 900000});
                 res.redirect('/chat');
             });
         } else {
@@ -110,6 +119,7 @@ app.get('/chat', requiredAuthentication, function(req, res) {
    res.sendfile(__dirname + '/chat.html');
 });
 
+//TODO Associer med en knap på ui
 app.get('/logout', function (req, res) {
     req.session.destroy(function () {
         res.redirect('/');
@@ -119,6 +129,22 @@ app.get('/logout', function (req, res) {
 // Should'nt be accessable for users
 app.get('/emote.js', requiredAuthentication, function(req, res) {
   res.sendfile(__dirname + '/scripts/emote.js');
+})
+
+//REST api
+//Get all messages written by user with studynumber @param{sNumber}
+app.get('/chat/api/:sNumber', function(req, res,  next) {
+  //TODO Write code to look up data in mongodb and return as JSON object
+  var test = {"Username":req.params.sNumber, "gay":true, "chat":"KappaChat" };
+  console.log("Value of sNumber: " + req.params.sNumber);
+  res.send(test);
+});
+
+//Get all messages containing keyword @param{sNumber}
+app.get('/chat/api/:keyWord', function(req, res, next) {
+  //TODO Write code to look up data in mongodb and return as JSON object
+
+
 })
 
 server.listen(3000, function() {
