@@ -75,7 +75,9 @@
   //Log out function
   function logout() {
 
-    $.get("http://localhost:3000/logout");
+    // Redirect to log out page
+    window.location = "/logout";
+    //$.get("http://localhost:3000/logout");
     /*
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open('GET', location.href.substring(0, 21) + '/logout', false);
@@ -83,7 +85,6 @@
     return xmlHttp.responseText;
     */
   }
-
 
     //Chat functionality
     $(function () {

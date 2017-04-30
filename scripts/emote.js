@@ -58,6 +58,10 @@ var emotes = (function () {
 
           var jsonObj;
 
+          // Controls whether the json object is downloaded
+          if (json == undefined)
+            return -1;
+
           // if word exists as keyword in jsonEmotes...
             if ((jsonObj = json.emotes[word]) != undefined) {
               console.log("Emote found in message: " + word);
