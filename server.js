@@ -18,47 +18,38 @@ app.configure(function () {
     app.use(express.static(path.join(__dirname, 'images')));
 });
 
-app.use(function (req, res, next) {
-    var err = req.session.error,
-        msg = req.session.success;
-    delete req.session.error;
-    delete req.session.success;
-    res.locals.message = '';
-    if (err) res.locals.message = '<p class="msg error">' + err + '</p>';
-    if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
-    next();
-});
-
-app.use(function (req, res, next) {
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log('Client IP:', ip);
-  next();
-});
-
-/*
-Helper Functions
-*/
+//Method for making a soap call to javabog
 function authenticate(name, pass, callback) {
 console.log('Trying to log in user with Username: ' + name + ' Pass: ' + pass);
   var url = 'http://javabog.dk:9901/brugeradmin?wsdl';
   var args = {':arg0': name, ':arg1': pass};
 
   soap.createClient(url, function(err, client) {
-    console.log("Value of err: " + err);
-    client.BrugeradminImplService.BrugeradminImplPort.hentBruger(args, function(err, result) {
 
-        if(result) {
-          console.log(result);
-          var user = new UserModel.User(result.return.brugernavn);
-          user.chatColor = '#2055';
-          console.log(user.userName);
-          callback(null, user);
-        }
-        else {
-          console.log(err);
-          callback(new Error('Cannot authenticate user'));
-        }
-    });
+    console.log('Value of err: ' + err);
+
+    //Always returns err=null irregardless of whether authentication failed or not
+    if(client) {
+    client.BrugeradminImplService.BrugeradminImplPort.hentBruger(args, function(err, result) {
+      console.log(result);
+
+      try{
+        var user = new UserModel.User(result.return.brugernavn);
+        console.log(user.userName);
+        callback(null, user);
+      }catch(err) {
+        callback(new Error('Could not authenticate user. Please try again'), null  );
+      }
+
+
+
+      });
+    }//end if
+    else {
+      callback(new Error('Javabog.dk is offline. Contact Jakob Nordfalk for technical support!'), null);
+    }
+
+
   });
 
 };
@@ -86,30 +77,33 @@ io.on('connection', function(socket) {
 
 app.get("/", function (req, res) {
 
-    if (req.session.user) {
-        res.send("Welcome " + req.session.user.userName + "<br>" + "<a href='/logout'>logout</a>");
-    } else {
-        res.sendfile(__dirname + '/login.html');
-    }
+  if(requiredAuthentication) {
+    res.redirect('/chat');
+  } else {
+    res.sendfile(__dirname + '/login.html');
+  }
 });
 
 app.get("/login", function (req, res) {
-    res.sendfile(__dirname + '/login.html');
+      res.sendfile(__dirname + '/login.html');
+
 });
 
 app.post("/login", function (req, res) {
+    res.clearCookie('errMsg');
     authenticate(req.body.username, req.body.password, function (err, user) {
         if (user) {
 
             req.session.regenerate(function () {
 
                 req.session.user = user;
-                res.cookie('userName', user.userName, {maxAge: 900000});
-                res.cookie('chatColor', user.chatColor, {maxAge: 900000});
+                res.cookie('userName', user.userName, {maxAge: 90000000});
+                res.cookie('chatColor', user.chatColor, {maxAge: 90000000});
                 res.redirect('/chat');
             });
         } else {
-            req.session.error = 'Authentication failed, please check your ' + ' username and password.';
+            console.log('Value of err: ' + err);
+            res.cookie('errMsg', err.message);
             res.redirect('/login');
         }
     });

@@ -9,7 +9,7 @@
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font-family: 'Lato'; }
 
-      form {
+      .chatInput {
         padding: 5px;
         position: fixed;
         bottom: 0;
@@ -36,6 +36,17 @@
       #messages { list-style-type: none; margin: 0; padding: 0}
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
+
+      .logoutButton {
+        font-family: 'Lato';
+        width: 9%;
+        padding: 5px 15px 5px 15px;
+        border-style: double;
+        margin-bottom: 65%;
+        margin-left: 90%;
+        border-style: none;
+      }
+
     </style>
   </head>
 
@@ -44,6 +55,7 @@
   <script type="text/javascript" src="emote.js"></script>
   <script>
 
+  //Cookie handling
   var userName = readCookie('userName');
   var chatColor = readCookie('chatColor');
 
@@ -60,6 +72,20 @@
     return null;
 }
 
+  //Log out function
+  function logout() {
+
+    $.get("http://localhost:3000/logout");
+    /*
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('GET', location.href.substring(0, 21) + '/logout', false);
+    xmlHttp.send(null);
+    return xmlHttp.responseText;
+    */
+  }
+
+
+    //Chat functionality
     $(function () {
       var socket = io();
       $('form').submit(function(){
@@ -120,8 +146,11 @@
 
   <body>
     <ul id="messages"></ul>
-    <form action="">
+    <form action="" class='chatInput'>
       <input id="m" autocomplete="off" placeholder="Write a chatmessage" /><button>Send</button>
     </form>
+
+    <button class='logoutButton' onclick="logout()">Logout</button>
+
   </body>
 </html>

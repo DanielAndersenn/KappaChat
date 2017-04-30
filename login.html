@@ -39,12 +39,8 @@
 
     </style>
 </head>
-<script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-<script>
 
-
-</script>
 
 <body>
   <img src="/Kappa.jpg"/ width="400" margin-left="200px"/>
@@ -56,6 +52,27 @@
   </form>
 </div>
 
+<div id='errMsg' class='divCenter'></div>
+
+  <script>
+
+    var errMsg = readCookie('errMsg');
+
+    var element = document.getElementById("errMsg");
+    element.innerHTML = errMsg;
+
+    function readCookie(name) {
+      var nameEQ = name + "=";
+      var ca = document.cookie.split(';');
+      for(var i=0;i < ca.length;i++) {
+          var c = ca[i];
+          while (c.charAt(0)==' ') c = c.substring(1,c.length);
+          if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length).replace(/%20/g, ' ');
+      }
+      return null;
+  }
+
+  </script>
 
 </body>
 
