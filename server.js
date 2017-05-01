@@ -93,7 +93,7 @@ app.post("/login", function (req, res) {
     res.clearCookie('errMsg');
     authenticate(req.body.username, req.body.password, function (err, user) {
         if (user) {
-
+            io.emit('server info', 'User ' + user.userName + ' joined the chat!');
             req.session.regenerate(function () {
 
                 req.session.user = user;
@@ -115,6 +115,7 @@ app.get('/chat', requiredAuthentication, function(req, res) {
 
 //TODO Associer med en knap på ui
 app.get('/logout', function (req, res) {
+    io.emit('server info', 'User ' + req.session.user.userName + ' left the chat!');
     req.session.destroy(function () {
         res.redirect('/');
     });
