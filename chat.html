@@ -40,12 +40,11 @@
 
       #header {text-align: center;}
       #messages::-webkit-scrollbar { display: none;}
-      #messages { overflow-y: auto; padding: 0; max-height: 660px}
+      #messages {overflow-y: auto; padding: 0; max-height: 660px}
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
       #messages ul { padding: 5px 10px; }
       #messages ul:nth-child(odd) { background: #eee; }
-
 
       .logoutButton {
         font-family: 'Lato';
@@ -63,13 +62,15 @@
   <script type="text/javascript" src="emote.js"></script>
   <script>
 
+
+
   //Helper function to keep new messages at the bottom
   function updateScroll(){
       var element = document.getElementById("messages");
       element.scrollTop = element.scrollHeight;
   }
 
-  //Cookie handling
+  // Cookie handling
   var userName = readCookie('userName');
   var chatColor = readCookie('chatColor');
 
@@ -94,6 +95,9 @@
 
     //Chat functionality
     $(function () {
+
+      $('#messages').append($('<li>').text("Welcome " + userName));
+
       var socket = io();
       $('form').submit(function(){
         socket.emit('chat message', userName + ':  ' + $('#m').val()); // Send message in type area

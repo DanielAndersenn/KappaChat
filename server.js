@@ -100,6 +100,7 @@ app.post("/login", function (req, res) {
                 res.cookie('userName', user.userName, {maxAge: 90000000});
                 res.cookie('chatColor', user.chatColor, {maxAge: 90000000});
                 res.redirect('/chat');
+
             });
         } else {
             console.log('Value of err: ' + err);
@@ -113,7 +114,6 @@ app.get('/chat', requiredAuthentication, function(req, res) {
    res.sendfile(__dirname + '/chat.html');
 });
 
-//TODO Associer med en knap på ui
 app.get('/logout', function (req, res) {
     io.emit('server info', 'User ' + req.session.user.userName + ' left the chat!');
     req.session.destroy(function () {
@@ -121,7 +121,6 @@ app.get('/logout', function (req, res) {
     });
 });
 
-// Should'nt be accessable for users
 app.get('/emote.js', requiredAuthentication, function(req, res) {
   res.sendfile(__dirname + '/scripts/emote.js');
 })
