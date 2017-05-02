@@ -127,7 +127,7 @@ app.get('/emote.js', requiredAuthentication, function(req, res) {
 
 //REST api
 //Get all messages written by user with studynumber @param{sNumber}
-app.get('/chat/api/:sNumber', function(req, res,  next) {
+app.get('/chat/api/usearch:sNumber', function(req, res,  next) {
   //TODO Write code to look up data in mongodb and return as JSON object
   var test = {"Username":req.params.sNumber, "gay":true, "chat":"KappaChat" };
   console.log("Value of sNumber: " + req.params.sNumber);
@@ -135,10 +135,27 @@ app.get('/chat/api/:sNumber', function(req, res,  next) {
 });
 
 //Get all messages containing keyword @param{sNumber}
-app.get('/chat/api/:keyWord', function(req, res, next) {
+app.get('/chat/api/kwsearch/:keyWord', function(req, res, next) {
   //TODO Write code to look up data in mongodb and return as JSON object
 
 
+})
+
+app.get('/chat/api/auth/:username/:password', function(req, res, next) {
+  console.log('Authenticating user ' + req.params.username + ' through REST API');
+  var toReturn;
+  authenticate(req.params.username, req.params.password, function (err, user) {
+      if (user) {
+          io.emit('server info', 'User ' + user.userName + ' joined the chat!');
+          toReturn = {'authenticated':'true', 'user':user};
+          res.status(200).send(toReturn);
+
+
+      } else {
+          toReturn = {'authenticated':'false', 'error':err};
+          res.status(404).send(toReturn);
+      }
+  });
 })
 
 server.listen(3000, function() {
