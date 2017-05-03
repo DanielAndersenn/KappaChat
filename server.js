@@ -8,7 +8,7 @@ var path = require('path');
 var UserModel = require('./DataModels/UserModel');
 var io = require('socket.io').listen(server);
 var soap = require('soap');
-var db = require('./database.js');
+var db = require('./scripts/database.js');
 
 
 //Configure the application and prepare for sessionhandling
@@ -28,22 +28,20 @@ app.configure(function () {
 
 //Method for making a soap call to javabog
 function authenticate(name, pass, callback) {
-console.log('Trying to log in user with Username: ' + name + ' Pass: ' + pass);
+writeToConsoleLog('Trying to log in user with Username: ' + name + ' Pass: ' + pass ' using SOAP');
   var url = 'http://javabog.dk:9901/brugeradmin?wsdl';
   var args = {':arg0': name, ':arg1': pass};
 
   soap.createClient(url, function(err, client) {
-
-    console.log('Value of err: ' + err);
+    writeToConsoleLog('Value of err: ' + err);
 
     //Always returns err=null irregardless of whether authentication failed or not
     if(client) {
     client.BrugeradminImplService.BrugeradminImplPort.hentBruger(args, function(err, result) {
-      console.log(result);
 
       try{
+        writeToConsoleLog(result);
         var user = new UserModel.User(result.return.brugernavn);
-        console.log(user.userName);
         callback(null, user);
       }catch(err) {
         callback(new Error('Could not authenticate user. Please try again'), null  );
@@ -71,9 +69,14 @@ function requiredAuthentication(req, res, next) {
     }
 }
 
-//Metoden bliver kaldt når en klient forbinder gennem websocket gennem javascript
+function writeToConsoleLog(msg) {
+  console.log(msg);
+  io.emit('console input', msg);
+}
+
+//Metoden bliver kaldt når en klient forbinder gennem websocket fra chat.html
 io.on('connection', function(socket) {
-  console.log('Client connected with socket ID: ' + socket.id);
+  writeToConsoleLog('Client connected with socket ID: ' + socket.id);
   socket.on('chat message', function(msg){
     io.emit('chat message', msg);
     db.send(msg);
@@ -82,8 +85,7 @@ io.on('connection', function(socket) {
 }); // end io.on
 
 
-//Routing controll
-
+//Routing control
 app.get("/", function (req, res) {
 
   if(requiredAuthentication) {
@@ -93,6 +95,7 @@ app.get("/", function (req, res) {
   }
 });
 
+//Route for login
 app.get("/login", function (req, res) {
       res.sendfile(__dirname + '/login.html');
 
@@ -112,13 +115,14 @@ app.post("/login", function (req, res) {
 
             });
         } else {
-            console.log('Value of err: ' + err);
+            writeToConsoleLog('Value of err: ' + err);
             res.cookie('errMsg', err.message);
             res.redirect('/login');
         }
     });
 });
 
+//Route for chat
 app.get('/chat', requiredAuthentication, function(req, res) {
    res.sendfile(__dirname + '/chat.html');
 });
@@ -134,30 +138,45 @@ app.get('/emote.js', requiredAuthentication, function(req, res) {
   res.sendfile(__dirname + '/scripts/emote.js');
 })
 
-//REST api
+//REST api start
 //Get all messages written by user with studynumber @param{sNumber}
-app.get('/chat/api/usearch:sNumber', function(req, res,  next) {
-  //TODO Write code to look up data in mongodb and return as JSON object
-  var test = {"Username":req.params.sNumber, "gay":true, "chat":"KappaChat" };
-  console.log("Value of sNumber: " + req.params.sNumber);
-  res.send(test);
+app.get('/chat/api/usearch/:sNumber', function(req, res) {
+
+  db.getMsgsByUser(req.params.sNumber, function(err, result) {
+
+    res.status(200).send(result);
+  });
+
+
 });
 
 //Get all messages containing keyword @param{sNumber}
-app.get('/chat/api/kwsearch/:keyWord', function(req, res, next) {
+app.get('/chat/api/kwsearch/:keyWord', function(req, res) {
   //TODO Write code to look up data in mongodb and return as JSON object
 
 
 });
 
-app.get('/chat/api/ti/:startDate:/endDate', function(req, res, next) {
-  //TODO Write code to look up data in mongodb and return as JSON object
+//Get messages sent between two dates @param{startDate}, {endDate}
+app.get('/chat/api/ti/:startDate:/endDate', function(req, res) {
 
+  db.getMsgsByInterval(req.params.startDate, req.params.endDate, function(err, result) {
 
+    res.status(200).send(result);
+  });
 });
 
+//Write a message to the chat without being logged in
+app.put('/chat/api/sendMsg', function(req, res) {
+  writeToConsoleLog("Sending chatmsg: " + req.body.msg + " through REST API");
+  io.emit('chat message', req.body.msg);
+
+  res.status(200).send("Message sent!");
+});
+
+//Authenticate against javabog.dk through this REST method @param{username} {password}
 app.get('/chat/api/auth/:username/:password', function(req, res, next) {
-  console.log('Authenticating user ' + req.params.username + ' through REST API');
+  writeToConsoleLog('Authenticating user ' + req.params.username + ' through REST API');
   var toReturn;
   authenticate(req.params.username, req.params.password, function (err, user) {
       if (user) {
@@ -165,13 +184,13 @@ app.get('/chat/api/auth/:username/:password', function(req, res, next) {
           toReturn = {'authenticated':'true', 'user':user};
           res.status(200).send(toReturn);
 
-
       } else {
           toReturn = {'authenticated':'false', 'error':err};
           res.status(404).send(toReturn);
       }
   });
 })
+//REST api end
 
 server.listen(30022 , function() {
   console.log("Listening for connections on port 30022 ...");
