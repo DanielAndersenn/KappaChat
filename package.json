@@ -10,6 +10,8 @@
     "express": "3.0.0rc4",
     "nodemon": "*",
     "socket.io": "^1.7.3",
-    "soap": "*"
+    "soap": "*",
+    "bluebird": "*",
+    "mongoose":"*"
   }
 }
