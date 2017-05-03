@@ -47,8 +47,16 @@ module.exports = {
 
   close: function(){
     db.close();
-  } //close END
+  }, //close END
 
+
+  getMsgsByUser: function(studentID,callback){
+    Days.aggregate(
+      {$unwind: "$messages"},
+      {$match: {'messages.name': studentID}},
+      {$group: {_id : '$day', messages: {$push: "$messages.message"} } }
+    ).exec(function(err,result){callback(err,result)});
+  }
 
 } // ## External Interface END
 
