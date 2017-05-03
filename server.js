@@ -150,13 +150,6 @@ app.get('/chat/api/usearch/:sNumber', function(req, res) {
 
 });
 
-//Get all messages containing keyword @param{sNumber}
-app.get('/chat/api/kwsearch/:keyWord', function(req, res) {
-  //TODO Write code to look up data in mongodb and return as JSON object
-
-
-});
-
 //Get messages sent between two dates @param{startDate}, {endDate}
 app.get('/chat/api/ti/:startDate:/endDate', function(req, res) {
 
