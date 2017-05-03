@@ -5,9 +5,10 @@ var app = express();
 var http = require('http');
 var server = http.createServer(app);
 var path = require('path');
-var UserModel = require('./UserModel');
+var UserModel = require('./DataModels/UserModel');
 var io = require('socket.io').listen(server);
 var soap = require('soap');
+var db = require('./database.js');
 
 
 //Configure the application and prepare for sessionhandling
@@ -16,6 +17,13 @@ app.configure(function () {
     app.use(express.cookieParser('KappaChat'));
     app.use(express.session());
     app.use(express.static(path.join(__dirname, 'images')));
+    try{
+      db.connect();
+      console.log('Database connection successfully made!');
+    }catch(err) {
+
+      console.log('Database connection failed! ' + err);
+    }
 });
 
 //Method for making a soap call to javabog
@@ -68,6 +76,7 @@ io.on('connection', function(socket) {
   console.log('Client connected with socket ID: ' + socket.id);
   socket.on('chat message', function(msg){
     io.emit('chat message', msg);
+    db.send(msg);
   }); // end socket.on.chat message
 
 }); // end io.on
@@ -139,7 +148,13 @@ app.get('/chat/api/kwsearch/:keyWord', function(req, res, next) {
   //TODO Write code to look up data in mongodb and return as JSON object
 
 
-})
+});
+
+app.get('/chat/api/ti/:startDate:/endDate', function(req, res, next) {
+  //TODO Write code to look up data in mongodb and return as JSON object
+
+
+});
 
 app.get('/chat/api/auth/:username/:password', function(req, res, next) {
   console.log('Authenticating user ' + req.params.username + ' through REST API');
@@ -158,6 +173,6 @@ app.get('/chat/api/auth/:username/:password', function(req, res, next) {
   });
 })
 
-server.listen(3000, function() {
-  console.log("Listening for connections on port 3000 ...");
+server.listen(30022 , function() {
+  console.log("Listening for connections on port 30022 ...");
 });
