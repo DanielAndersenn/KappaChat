@@ -28,7 +28,7 @@ app.configure(function () {
 
 //Method for making a soap call to javabog
 function authenticate(name, pass, callback) {
-writeToConsoleLog('Trying to log in user with Username: ' + name + ' Pass: ' + pass ' using SOAP');
+writeToConsoleLog('Trying to log in user with Username: ' + name + ' Pass: ' + pass + ' using SOAP');
   var url = 'http://javabog.dk:9901/brugeradmin?wsdl';
   var args = {':arg0': name, ':arg1': pass};
 
