@@ -1,13 +1,13 @@
 /*
 .js class to hold functionality for emotes
-
-TODO Module pattern - check it out
 */
+
 var emotes = (function () {
 
   // Global varibale to hold .json object
   var json;
 
+  // Data structure
   /*
   meta {...} // When was the json-object generated
   template {small
@@ -25,11 +25,12 @@ var emotes = (function () {
   var emoteUrl = " https://twitchemotes.com/api_cache/v2/global.json";
 
   // Define method to get JSON object from url
-  //TODO No idea what callback is used for
   var getJSON = function(url, callback) {
     var xhr = new XMLHttpRequest();
+
     xhr.open('GET', url, true);
     xhr.responseType = 'json';
+
     xhr.onload = function() {
       var status = xhr.status;
       if (status == 200) {
@@ -38,17 +39,20 @@ var emotes = (function () {
         callback(status);
       }
     };
+
     xhr.send();
   };
 
   // Call method to fetch JSON object
   getJSON(emoteUrl, function(err, data) {
+
     if (err != null) { // if an error occured...
       alert('Something went wrong: ' + err);
+      console.log("getJSON unsuccesful");
     } else {
       json = data;
 
-      console.log("Debug : getJSON succes");
+      console.log("getJSON succesful");
     }
   });
 
@@ -70,14 +74,14 @@ var emotes = (function () {
             } else {
               return -1; // If no emote was matched return -1
             }
-        }
+        } // emoteControl end
 
       // Method to return emote_url
       , emoteReturn: function(emote_id) {
           var link = json.template.small; // Fetch the link for small pictures
           var emoteLink = link.replace("{image_id}", emote_id); // insert emote id
           return emoteLink;
-        }
+        } // emoteReturn end
 
         // TODO MOVE THIS - returns random color code
       , randomColor: function() {
