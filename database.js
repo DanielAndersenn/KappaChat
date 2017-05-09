@@ -3,16 +3,15 @@
 var mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 
-var daySchema = mongoose.Schema({
-  day: String,
+var dateSchema = mongoose.Schema({
+  date: Date,
   messages: [{
-    time: String,
     name: String,
     message: String
   }]
 });
 
-var Days = mongoose.model('Days', daySchema);
+var Dates = mongoose.model('Dates', dateSchema);
 // ## Initial end
 
 // ## External Interface
@@ -49,12 +48,23 @@ module.exports = {
     db.close();
   }, //close END
 
+  // DDMMYYYY
+  getMsgsByInterval: function(startDate, endDate, callback){
+    inputEndDate = new Date(endDate); console.log(inputEndDate);
+    inputStartDate = new Date(startDate); console.log(inputStartDate);
+
+    Dates.find({date:{ $lte: inputEndDate, $gte: inputStartDate } }, function(err,result){
+        callback(err,result);
+    })
+
+
+  },
 
   getMsgsByUser: function(studentID,callback){
-    Days.aggregate(
+    Dates.aggregate(
       {$unwind: "$messages"},
       {$match: {'messages.name': studentID}},
-      {$group: {_id : '$day', messages: {$push: "$messages.message"} } }
+      {$group: {_id : '$date', messages: {$push: "$messages.message"} } }
     ).exec(function(err,result){callback(err,result)});
   }
 
@@ -62,12 +72,11 @@ module.exports = {
 
 // ## Internal Helper methods
 function storeMessage(name,message){
-  Days.findOneAndUpdate(
-    {"day": calcDay()}, //Query
+  Dates.findOneAndUpdate(
+    {"date": calcDay()}, //Query
     {$push: //Operation
       {"messages": //Which array to push
-        { time: calcTime(),
-          name: name,
+        { name: name,
           message: message
         } //Object
       }  //Array end
@@ -91,7 +100,8 @@ function calcDay(){
   if(dd<10) dd= "0"+dd;
   if(mm<10) mm = "0"+mm;
 
-  return dd+"/"+mm+"/"+date.getFullYear();
+  return date.getFullYear()+"-"+mm+"-"+dd
+  //return dd+"/"+mm+"/"+date.getFullYear();
 }
 
 function calcTime(){
