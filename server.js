@@ -78,6 +78,7 @@ io.on('connection', function(socket) {
   writeToConsoleLog('Client connected with socket ID: ' + socket.id);
   socket.on('chat message', function(msg){
     io.emit('chat message', msg);
+    writeToConsoleLog(msg);
     db.send(msg);
   }); // end socket.on.chat message
 
@@ -104,6 +105,7 @@ app.post("/login", function (req, res) {
     res.clearCookie('errMsg');
     authenticate(req.body.username, req.body.password, function (err, user) {
         if (user) {
+            writeToConsoleLog('User ' + user.userName + ' joined the chat!');
             io.emit('server info', 'User ' + user.userName + ' joined the chat!');
             req.session.regenerate(function () {
 
