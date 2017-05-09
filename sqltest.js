@@ -3,7 +3,7 @@ var db = require('./database.js');
 try{
   db.connect();
 //  db.send("s134542: Hej Rasmus");
-    db.aggTest('s130022',function(err,result){
+    //db.('s134542',function(err,result){
       console.log(result);
     });
 // db.getMsgsByUser("s134542",function(err,result){

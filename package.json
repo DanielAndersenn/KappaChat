@@ -1,7 +1,7 @@
 {
-  "name": "KappaChat",
+  "name": "DistruChat",
   "version": "0.0.1",
-  "description": "PogChamp",
+  "description": "final project for course ",
   "private": true,
   "scripts": {
     "start": "nodemon server.js"

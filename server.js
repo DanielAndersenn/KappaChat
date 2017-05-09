@@ -1,4 +1,3 @@
-
 //Module Dependencies
 var express = require('express');
 var app = express();
@@ -64,7 +63,7 @@ function requiredAuthentication(req, res, next) {
     if (req.session.user) {
         next();
     } else {
-        req.session.error = 'Access denied!';
+        req.session.error = 'You need to log in';
         res.redirect('/login');
     }
 }
@@ -127,6 +126,7 @@ app.get('/chat', requiredAuthentication, function(req, res) {
    res.sendfile(__dirname + '/chat.html');
 });
 
+//Route for logout
 app.get('/logout', function (req, res) {
     io.emit('server info', 'User ' + req.session.user.userName + ' left the chat!');
     req.session.destroy(function () {
@@ -134,6 +134,7 @@ app.get('/logout', function (req, res) {
     });
 });
 
+//Route for chat.html to get emote.js
 app.get('/emote.js', requiredAuthentication, function(req, res) {
   res.sendfile(__dirname + '/scripts/emote.js');
 })
@@ -143,24 +144,33 @@ app.get('/emote.js', requiredAuthentication, function(req, res) {
 app.get('/chat/api/usearch/:sNumber', function(req, res) {
 
   db.getMsgsByUser(req.params.sNumber, function(err, result) {
-
+    if (result)
+    {
     res.status(200).send(result);
+  } else {
+    res.status(503).send(err);
+  }
   });
 
 
 });
 
 //Get messages sent between two dates @param{startDate}, {endDate}
-app.get('/chat/api/ti/:startDate:/endDate', function(req, res) {
+app.get('/chat/api/isearch/:startDate:/endDate', function(req, res) {
 
   db.getMsgsByInterval(req.params.startDate, req.params.endDate, function(err, result) {
-
+    if (result)
+    {
     res.status(200).send(result);
+  } else {
+    res.status(503).send(err);
+  }
+
   });
 });
 
 //Write a message to the chat without being logged in
-app.put('/chat/api/sendMsg', function(req, res) {
+app.put('/chat/api/sendmsg', function(req, res) {
   writeToConsoleLog("Sending chatmsg: " + req.body.msg + " through REST API");
   io.emit('chat message', req.body.msg);
 
