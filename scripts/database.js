@@ -48,7 +48,7 @@ module.exports = {
     db.close();
   }, //close END
 
-  // DDMMYYYY
+  //Format YYYY-MM-DD
   getMsgsByInterval: function(startDate, endDate, callback){
     inputEndDate = new Date(endDate); console.log(inputEndDate);
     inputStartDate = new Date(startDate); console.log(inputStartDate);
@@ -58,7 +58,7 @@ module.exports = {
     })
 
 
-  },
+  }
 
   getMsgsByUser: function(studentID,callback){
     Dates.aggregate(

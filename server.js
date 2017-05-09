@@ -159,8 +159,8 @@ app.get('/chat/api/usearch/:sNumber', function(req, res) {
 });
 
 //Get messages sent between two dates @param{startDate}, {endDate}
-app.get('/chat/api/isearch/:startDate:/endDate', function(req, res) {
-
+app.get('/chat/api/isearch/:startDate/:endDate', function(req, res) {
+  console.log('Values of dates: ' + req.params.startDate + ' ' + req.params.endDate);
   db.getMsgsByInterval(req.params.startDate, req.params.endDate, function(err, result) {
     if (result)
     {
