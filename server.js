@@ -27,22 +27,23 @@ app.configure(function () {
 
 //Method for making a soap call to javabog
 function authenticate(name, pass, callback) {
-writeToConsoleLog('Trying to log in user with Username: ' + name + ' Pass: ' + pass + ' using SOAP');
+writeToConsoleLog('Trying to log in user with Username: ' + name + ', Password: ' + pass + ' using SOAP');
   var url = 'http://javabog.dk:9901/brugeradmin?wsdl';
   var args = {':arg0': name, ':arg1': pass};
 
   soap.createClient(url, function(err, client) {
-    writeToConsoleLog('Value of err: ' + err);
 
     //Always returns err=null irregardless of whether authentication failed or not
     if(client) {
     client.BrugeradminImplService.BrugeradminImplPort.hentBruger(args, function(err, result) {
 
       try{
-        writeToConsoleLog(result);
+        if(err==null){writeToConsoleLog('Authentication succeeded')};
+
         var user = new UserModel.User(result.return.brugernavn);
         callback(null, user);
       }catch(err) {
+        writeToConsoleLog('Authentication failed');
         callback(new Error('Could not authenticate user. Please try again'), null  );
       }
 
@@ -51,6 +52,7 @@ writeToConsoleLog('Trying to log in user with Username: ' + name + ' Pass: ' + p
       });
     }//end if
     else {
+      writeToConsoleLog('Javabog.dk is offline');
       callback(new Error('Javabog.dk is offline. Contact Jakob Nordfalk for technical support!'), null);
     }
 
@@ -116,7 +118,6 @@ app.post("/login", function (req, res) {
 
             });
         } else {
-            writeToConsoleLog('Value of err: ' + err);
             res.cookie('errMsg', err.message);
             res.redirect('/login');
         }
@@ -173,7 +174,7 @@ app.get('/chat/api/isearch/:startDate:/endDate', function(req, res) {
 
 //Write a message to the chat without being logged in
 app.put('/chat/api/sendmsg', function(req, res) {
-  writeToConsoleLog("Sending chatmsg: " + req.body.msg + " through REST API");
+  writeToConsoleLog("Sending chatmsg: \"" + req.body.msg + "\", through REST API");
   io.emit('chat message', req.body.msg);
 
   res.status(200).send("Message sent!");
@@ -181,15 +182,17 @@ app.put('/chat/api/sendmsg', function(req, res) {
 
 //Authenticate against javabog.dk through this REST method @param{username} {password}
 app.get('/chat/api/auth/:username/:password', function(req, res, next) {
-  writeToConsoleLog('Authenticating user ' + req.params.username + ' through REST API');
+  writeToConsoleLog('Authenticating user: ' + req.params.username + ', through REST API');
   var toReturn;
   authenticate(req.params.username, req.params.password, function (err, user) {
       if (user) {
+          writeToConsoleLog('User succesfully authenticated');
           io.emit('server info', 'User ' + user.userName + ' joined the chat!');
           toReturn = {'authenticated':'true', 'user':user};
           res.status(200).send(toReturn);
 
       } else {
+        writeToConsoleLog('User could not be authenticated');
           toReturn = {'authenticated':'false', 'error':err};
           res.status(404).send(toReturn);
       }
