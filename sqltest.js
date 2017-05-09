@@ -1,15 +1,15 @@
-var db = require('./database.js');
+var db = require('./scripts/database.js');
 
 try{
   db.connect();
-  db.send("s134542: Test af Dates");
+  //db.send("s134542: Test af Dates");
   /*
   db.getMsgsByUser("s134542",function(err,result){
     console.log(result);
   });
   */
 
-  db.getMsgsByInterval("2017-05-09","2017-05-09",function(err,result){
+  db.getMsgsByInterval("2017-05-08","2017-05-10",function(err,result){
     console.log(result);
   })
 
